@@ -1,19 +1,105 @@
-<template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Hello Vue 3 + Vite" />
-</template>
-
 <script setup>
-import HelloWorld from './components/HelloWorld.vue';
-</script>
+import { ref } from "vue";
+import contacts from "./contacts.json";
 
+let sortedContactList = ref(contacts.slice(0, 5));
+
+function addRandomContact() {
+  const randomContactIndex = Math.floor(Math.random() * contacts.length);
+  const randomContact = contacts[randomContactIndex];
+
+  const isContactAlreadyAdded = sortedContactList.value.some(
+    (contact) => contact.id === randomContact.id
+  );
+
+  if (
+    !isContactAlreadyAdded &&
+    sortedContactList.value.length < contacts.length
+  ) {
+    sortedContactList.value.push(randomContact);
+  } else if (sortedContactList.value.length === contacts.length) {
+    alert("No more contacts available to add.");
+  } else {
+    const nextRandomContact = contacts.find(
+      (contact) =>
+        !sortedContactList.value.some(
+          (addedContact) => addedContact.id === contact.id
+        )
+    );
+    sortedContactList.value.push(nextRandomContact);
+  }
+  
+}
+let sortNameStatus = ref(true);
+function sortAlphabetically() {
+  if (sortNameStatus) {
+    sortedContactList.value.sort((a, b) => a.name.localeCompare(b.name));
+    sortNameStatus = false;
+  } else {
+    sortedContactList.value.sort((a, b) => b.name.localeCompare(a.name));
+    sortNameStatus = true;
+  }
+}
+
+let sortPopularityStatus = ref(true);
+function sortByPopularity() {
+  if (sortPopularityStatus) {
+    sortedContactList.value.sort((a, b) => a.popularity - b.popularity);
+    sortPopularityStatus = false;
+  } else {
+    sortedContactList.value.sort((a, b) => b.popularity - a.popularity);
+    sortPopularityStatus = true;
+  }
+}
+
+function deleteContact(index) {
+  sortedContactList.value.splice(index, 1);
+}
+</script>
+<template>
+  <div class="main-container">
+    <h1>Iron contacts</h1>
+    <button @click="addRandomContact">Add Random Contact</button>
+    <button @click="sortAlphabetically">Sort by Name</button>
+    <button @click="sortByPopularity">Sort by Popularity</button>
+    <table>
+      <tbody>
+        <tr>
+          <th>Picture</th>
+          <td>Name</td>
+          <td>Popularity</td>
+          <td>Won Oscar</td>
+          <td>Won Emmy</td>
+          <td>Actions</td>
+        </tr>
+        <tr v-for="(contact, index) in sortedContactList" :key="index">
+          <td><img :src="contact.pictureUrl" alt="" /></td>
+          <td>{{ contact.name }}</td>
+          <td>{{ contact.popularity }}</td>
+          <td v-if="contact.wonOscar === true">🏆</td>
+          <td v-else></td>
+          <td v-if="contact.wonEmmy === true">&#11088</td>
+          <td v-else></td>
+          <td><button @click="deleteContact(index)">Delete</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+.main-container {
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  align-content: center;
+  font-weight: bold;
+}
+table {
+  margin: 30px 30px;
+}
+td {
+  padding: 20px 20px;
+  font-size: 16px;
+}
+img {
+  width: 120px;
 }
 </style>
